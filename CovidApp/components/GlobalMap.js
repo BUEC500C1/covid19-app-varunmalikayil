@@ -21,13 +21,19 @@ export default class GlobalMap extends Component {
             key: 0
           }],
         country: '',
-        validCountry: false
+        validCountry: false,
+        countryStats: {
+          dateOfOccurance: "",
+          confirmedCases: 0,
+          recoveredPatients: 0,
+          deathCount: 0
+        }
         }
         this.handlePress = this.handlePress.bind(this);
     }
 
     findCountry(coordinate){
-      Geocoder.init("");
+      Geocoder.init("AIzaSyDyxazCJ99CEdnxoxOG3UIolRj5C8_KvEU");
       var country = '';
       Geocoder.from(coordinate).then(json => {
         var coordinateData = json.results[0].address_components;
@@ -51,8 +57,40 @@ export default class GlobalMap extends Component {
             country: "Please select valid country"
           })
         }
+        this.getCountryStatistics();
         ;})
-        return country
+    }
+
+    renderingCountryStats(){
+      var data_style = {
+        fontStyle: 'italic',
+        color:"#01f5ff"
+      }
+  
+      if (this.state.country == "" ){ //no country there
+        return (<Text style={data_style}>Please select a country</Text>)
+      }
+      else{ //received data
+        return(
+          <View>
+            <Text style={{color:"#01f5ff", fontWeight: "bold", fontSize:18}}>
+                  {this.state.country}
+            </Text>
+            <Text style={data_style}>
+            Date: {this.state.countryStats.dateOfOccurance}
+            </Text>
+            <Text style={data_style}>
+              Confirmed: {this.state.countryStats.confirmedCases}
+            </Text>
+            <Text style={data_style}>
+              Deaths: {this.state.countryStats.deathCount}
+            </Text>
+            <Text style={data_style}>
+              Recovered: {this.state.countryStats.recoveredPatients}
+            </Text>
+          </View>
+        );
+      }
     }
 
     handlePress(e){
@@ -71,7 +109,7 @@ export default class GlobalMap extends Component {
             this.setState({
               validCountry: true,
               country: country
-            })
+            }, () => this.getCountryStatistics())
           }
           console.log('geo', country);
           ;})
@@ -114,6 +152,35 @@ export default class GlobalMap extends Component {
         )
     }
 
+    getCountryStatistics() {
+      var api_url = `https://api.covid19api.com/total/country/${this.state.country}`;
+      fetch(api_url)
+        .then((data) => data.json())
+        .then((dataJson) => {
+          if (dataJson.length >= 1 && dataJson[dataJson.length-1] != undefined){
+            this.setState({
+              loadingCovidData: false,
+              countryStats: {
+                dateOfOccurance: dataJson[dataJson.length-1]["Date"],
+                confirmedCases: dataJson[dataJson.length-1]["Confirmed"],
+                recoveredPatients: dataJson[dataJson.length-1]["Recovered"],
+                deathCount: dataJson[dataJson.length-1]["Deaths"]
+              }
+            }, () => console.log('stats', this.state));
+          }
+          else {
+            this.setState({
+              countryStats: {
+                dateOfOccurance: "",
+                confirmedCases: 0,
+                recoveredPatients: 0,
+                deathCount: 0
+              }
+            });            
+          } 
+    }).catch((error)=>console.log(error) );
+    }
+
     render(){
         const { latitude, longitude } = this.state
         if(latitude) {
@@ -132,7 +199,11 @@ export default class GlobalMap extends Component {
                     zoomControlEnabled={true}
                     zoomEnabled={true}
                 >
-                    {this.state.marker.map(marker => ( <Marker key={marker.key} coordinate={marker.coordinates} title={this.state.country}/> ))}
+                    {this.state.marker.map(marker => ( <Marker key={marker.key} coordinate={marker.coordinates} title={this.state.country}>
+                      <View style={styles.marker}>
+                        {this.renderingCountryStats()}
+                      </View>
+                    </Marker> ))}
                 </MapView>
           );   
         }
