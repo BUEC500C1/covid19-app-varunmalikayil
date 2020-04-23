@@ -56,7 +56,6 @@ export default class GlobalMap extends Component {
     }
 
     handlePress(e){
-        Geocoder.init("AIzaSyCEIZIdz0xZZkGHfuW0ewq1DJGXpWEr1z8");
         Geocoder.from(e.nativeEvent.coordinate).then(json => {
           var coordinateData = json.results[0].address_components;
           var country = '';
