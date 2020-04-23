@@ -3,6 +3,7 @@ import { StyleSheet, Dimensions, Text, View, Vibration } from 'react-native';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import { Marker } from 'react-native-maps';
 import * as Permissions from 'expo-permissions';
+import Geocoder from 'react-native-geocoding';
 
 const countryStyle = require('../mapStyle.json');
 
@@ -13,17 +14,70 @@ export default class GlobalMap extends Component {
         latitude: null,
         longitude: null,
         marker: [{
-            title: 'hello',
             coordinates: {
               latitude: 3.148561,
               longitude: 101.652778
             },
             key: 0
-          }]
+          }],
+        country: '',
+        validCountry: false
         }
         this.handlePress = this.handlePress.bind(this);
     }
+
+    findCountry(coordinate){
+      Geocoder.init("");
+      var country = '';
+      Geocoder.from(coordinate).then(json => {
+        var coordinateData = json.results[0].address_components;
+        for (var i = 0; i < coordinateData.length; i++){
+          for(var j = 0; j < coordinateData[i].types.length; j++){
+            if(coordinateData[i].types[j] == "country"){
+              country = coordinateData[i].long_name
+              break;
+            } 
+          }
+        }
+        if(country != ''){
+          this.setState({
+            validCountry: true,
+            country: country
+          })
+        }
+        else {
+          this.setState({
+            validCountry: false,
+            country: "Please select valid country"
+          })
+        }
+        ;})
+        return country
+    }
+
     handlePress(e){
+        Geocoder.init("AIzaSyCEIZIdz0xZZkGHfuW0ewq1DJGXpWEr1z8");
+        Geocoder.from(e.nativeEvent.coordinate).then(json => {
+          var coordinateData = json.results[0].address_components;
+          var country = '';
+          for (var i = 0; i < coordinateData.length; i++){
+            for(var j = 0; j < coordinateData[i].types.length; j++){
+              if(coordinateData[i].types[j] == "country"){
+                country = coordinateData[i].long_name
+                break;
+              } 
+            }
+          }
+          if(country != ''){
+            this.setState({
+              validCountry: true,
+              country: country
+            })
+          }
+          console.log('geo', country);
+          ;})
+        var test = this.findCountry(e.nativeEvent.coordinate);
+        console.log("test", test)
         this.setState({ 
           marker: [{
           coordinates: {
@@ -46,17 +100,17 @@ export default class GlobalMap extends Component {
             const response = await Permissions.askAsync(Permissions.LOCATION)
         }
         navigator.geolocation.getCurrentPosition(
-          ({ coords: { latitude, longitude } }) => this.setState({ 
+          ({ coords }) => this.setState({ 
               marker: [{
               coordinates: {
-                latitude: latitude,
-                longitude: longitude
+                latitude: coords.latitude,
+                longitude: coords.longitude
               },
               key: 0}
             ],
-            longitude: longitude,
-            latitude: latitude
-          }, () => console.log(this.state)),
+            longitude: coords.longitude,
+            latitude: coords.latitude
+          }, () => this.findCountry(coords)),
             (error) => console.log('Error:', error)
         )
     }
@@ -79,7 +133,7 @@ export default class GlobalMap extends Component {
                     zoomControlEnabled={true}
                     zoomEnabled={true}
                 >
-                    {this.state.marker.map(marker => ( <MapView.Marker key={marker.key} coordinate={marker.coordinates} title={marker.title}/> ))}
+                    {this.state.marker.map(marker => ( <Marker key={marker.key} coordinate={marker.coordinates} title={this.state.country}/> ))}
                 </MapView>
           );   
         }
