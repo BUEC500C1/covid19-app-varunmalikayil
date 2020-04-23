@@ -33,7 +33,7 @@ export default class GlobalMap extends Component {
     }
 
     findCountry(coordinate){
-      Geocoder.init("AIzaSyDyxazCJ99CEdnxoxOG3UIolRj5C8_KvEU");
+      Geocoder.init("");
       var country = '';
       Geocoder.from(coordinate).then(json => {
         var coordinateData = json.results[0].address_components;
