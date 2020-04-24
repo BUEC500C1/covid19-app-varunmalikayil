@@ -13,13 +13,7 @@ export default class GlobalMap extends Component {
         this.state = {
         latitude: null,
         longitude: null,
-        marker: [{
-            coordinates: {
-              latitude: 3.148561,
-              longitude: 101.652778
-            },
-            key: 0
-          }],
+        marker: [],
         country: '',
         validCountry: false,
         countryStats: {
@@ -45,52 +39,19 @@ export default class GlobalMap extends Component {
             } 
           }
         }
+
         if(country != ''){
           this.setState({
-            validCountry: true,
             country: country
           })
         }
         else {
           this.setState({
-            validCountry: false,
-            country: "Please select valid country"
+            country: "Please select a valid country"
           })
         }
         this.getCountryStatistics();
         ;})
-    }
-
-    renderingCountryStats(){
-      var data_style = {
-        fontStyle: 'italic',
-        color:"#01f5ff"
-      }
-  
-      if (this.state.country == "" ){ //no country there
-        return (<Text style={data_style}>Please select a country</Text>)
-      }
-      else{ //received data
-        return(
-          <View>
-            <Text style={{color:"#01f5ff", fontWeight: "bold", fontSize:18}}>
-                  {this.state.country}
-            </Text>
-            <Text style={data_style}>
-            Date: {this.state.countryStats.dateOfOccurance}
-            </Text>
-            <Text style={data_style}>
-              Confirmed: {this.state.countryStats.confirmedCases}
-            </Text>
-            <Text style={data_style}>
-              Deaths: {this.state.countryStats.deathCount}
-            </Text>
-            <Text style={data_style}>
-              Recovered: {this.state.countryStats.recoveredPatients}
-            </Text>
-          </View>
-        );
-      }
     }
 
     handlePress(e){
@@ -107,14 +68,10 @@ export default class GlobalMap extends Component {
           }
           if(country != ''){
             this.setState({
-              validCountry: true,
               country: country
             }, () => this.getCountryStatistics())
           }
-          console.log('geo', country);
           ;})
-        var test = this.findCountry(e.nativeEvent.coordinate);
-        console.log("test", test)
         this.setState({ 
           marker: [{
           coordinates: {
@@ -125,7 +82,7 @@ export default class GlobalMap extends Component {
         ],
         longitude: e.nativeEvent.coordinate.longitude,
         latitude: e.nativeEvent.coordinate.latitude
-      }, () => console.log('handle press', this.state)),
+      }),
         (error) => console.log('Error:', error)
             
     }
@@ -166,12 +123,12 @@ export default class GlobalMap extends Component {
                 recoveredPatients: dataJson[dataJson.length-1]["Recovered"],
                 deathCount: dataJson[dataJson.length-1]["Deaths"]
               }
-            }, () => console.log('stats', this.state));
+            });
           }
           else {
             this.setState({
               countryStats: {
-                dateOfOccurance: "",
+                dateOfOccurance: "N/A",
                 confirmedCases: 0,
                 recoveredPatients: 0,
                 deathCount: 0
@@ -182,12 +139,43 @@ export default class GlobalMap extends Component {
     }
 
     render(){
-        const { latitude, longitude } = this.state
-        if(latitude) {
+        const { latitude, longitude, countryStats, country } = this.state
+        var date = countryStats.dateOfOccurance.slice(0,10);
+        const stringStat = "Date: " + date +"\n"+ "Confirmed Cases: " + countryStats.confirmedCases +"\n"+
+        "Death Count: " + countryStats.deathCount + "\n" + "Recovered: " + countryStats.recoveredPatients;
+        if(country == ''){
+          return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <Text>Loading location...</Text>
+            </View>
+        );
+        }
+        else if(country == 'Please select a valid country'){
+          return (
+            <MapView 
+                provider={PROVIDER_GOOGLE}
+                style={styles.mapStyle} 
+                initialRegion={{
+                    latitude,
+                    longitude,
+                    latitudeDelta: 40,
+                    longitudeDelta: 0.0421
+                }}
+                onLongPress={this.handlePress}
+                customMapStyle={countryStyle}
+                rotateEnabled={false}
+            >
+                {this.state.marker.map(marker => ( 
+                <Marker key={marker.key} coordinate={marker.coordinates}
+                title={country} /> ))}
+            </MapView>
+          );   
+        }
+        else {
             return (
                 <MapView 
                     provider={PROVIDER_GOOGLE}
-                    style={{ flex: 1 }} 
+                    style={styles.mapStyle} 
                     initialRegion={{
                         latitude,
                         longitude,
@@ -196,35 +184,19 @@ export default class GlobalMap extends Component {
                     }}
                     onLongPress={this.handlePress}
                     customMapStyle={countryStyle}
-                    zoomControlEnabled={true}
-                    zoomEnabled={true}
-                >
-                    {this.state.marker.map(marker => ( <Marker key={marker.key} coordinate={marker.coordinates} title={this.state.country}>
-                      <View style={styles.marker}>
-                        {this.renderingCountryStats()}
-                      </View>
-                    </Marker> ))}
+                    rotateEnabled={false}
+                    >
+                    {this.state.marker.map(marker => (
+                    <Marker key={marker.key} coordinate={marker.coordinates}
+                    title={country} description={stringStat}/>
+                    ))}
                 </MapView>
           );   
         }
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text>Welcome to the COVID-19 Tracker!</Text>
-            </View>
-        );
     }
   }
 
   const styles = StyleSheet.create({
-    container: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-    },
     mapStyle: {
       width: Dimensions.get('window').width,
       height: Dimensions.get('window').height,
