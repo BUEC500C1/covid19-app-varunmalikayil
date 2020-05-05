@@ -40,8 +40,8 @@ Here is the page where users can see the data per country. The application will 
 
 <p align="center">
   <img src="./images/IMG_8162.jpg" width="60%" />
-  <img src="./images/IMG_8163.png" width="60%" />
-  <img src="./images/IMG_8164.png" width="60%" />
+  <img src="./images/IMG_8163.PNG" width="60%" />
+  <img src="./images/IMG_8164.PNG" width="60%" />
 </p>
 
 ## Cases By Date
