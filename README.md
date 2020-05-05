@@ -32,16 +32,16 @@ This is the homepage that will welcome the user to this application, from here t
 This is the page that will show the world statistics of corona virus, with number of total cases, deaths, and recoveries.
 
 <p align="center">
-<img src="./images/IMG_8161.jpg" width="60%" />
+<img src="./Images/IMG_8161.jpg" width="60%" />
 </p>
 
 ## World Map
 Here is the page where users can see the data per country. The application will ask for the user to provide it's location and will show a marker on the map there. To find out stats about your local country click on the marker to display the information. If you want to get the stats for a new country you have to long press (press for approx. 3 seconds) to place the marker somewhere else and get the information for that country by clicking on the new marker.
 
 <p align="center">
-  <img src="./images/IMG_8162.jpg" width="60%" />
-  <img src="./images/IMG_8163.PNG" width="60%" />
-  <img src="./images/IMG_8164.PNG" width="60%" />
+  <img src="./Images/IMG_8162.jpg" width="60%" />
+  <img src="./Images/IMG_8163.PNG" width="60%" />
+  <img src="./Images/IMG_8164.PNG" width="60%" />
 </p>
 
 ## Cases By Date
